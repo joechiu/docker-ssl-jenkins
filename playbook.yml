@@ -1,0 +1,57 @@
+---
+- hosts: localhost
+  become: yes
+  vars:
+    jenkins_home: /var/lib/jenkins
+    jenkins_local: /opt/jenkins
+    image: dacjenkins
+    password: 'foobar'
+    sock: /var/run/docker.sock
+    docker: /usr/bin/docker
+    sysconfig: /etc/sysconfig/docker
+    uid: 1000
+    port: 8080
+  tasks:
+    - name: Install docker
+      yum: name={{ item }} state=installed
+      with_items:
+       - docker
+
+    - name: Start the dockerd service
+      service: name=docker state=started enabled=yes
+
+    - name: stop and clean up docker process
+      ignore_errors: yes
+      shell: |
+        docker stop $(docker ps -a -q)
+        docker rm -f $(docker ps -a -q)
+        docker rmi -f $(docker images -q)
+      args:
+        warn: no
+      tags: cleanup
+
+    - name: Create jenkins directory beforehand
+      file: path={{ jenkins_local }} state=directory owner={{uid}} mode=0755
+
+    - name: Ansible copy file to remote server
+      copy:
+        src: Dockerfile
+        dest: /root
+
+    - name: Build a local jenkins docker container
+      shell: |
+        docker build -t {{image}} .
+      args:
+        warn: no
+
+    - name: Run jenkins docker daemon at port {{port}}
+      shell: |
+        docker run --restart=always -u {{uid}} -e JENKINS_PASSWORD={{password}} -p {{port}}:8443 -p 50000:50000 -v {{sock}}:{{sock}}:z -v {{docker}}:{{docker}} -v {{sysconfig}}:{{sysconfig}}:z -v {{jenkins_local}}:{{jenkins_home}}:z -d {{image}}
+      args:
+        warn: no
+
+#     - name: initialize jenkins
+#       shell: |
+#         cd /root/init/
+#         ./init.sh
+

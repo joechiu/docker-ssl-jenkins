@@ -1,0 +1,32 @@
+---
+- hosts: site
+  become: yes
+  vars:
+    image: dacjenkins-backup
+    # update the password instantly when installation is done
+    password: 'foobar'
+    sock: /var/run/docker.sock
+    docker: /usr/bin/docker
+    sysconfig: /etc/sysconfig/docker
+    uid: 1000
+    port: 8080
+  tasks:
+    - name: stop and clean up docker process
+      ignore_errors: yes
+      shell: |
+        docker stop $(docker ps -a -q)
+        docker rm -f $(docker ps -a -q)
+      args:
+        warn: no
+
+    - name: Run jenkins docker daemon at port {{port}}
+      shell: |
+        docker run --restart=always -u {{uid}} -e JENKINS_PASSWORD={{password}} -p {{port}}:8443 -p 50000:50000 -v {{sock}}:{{sock}}:z -v {{docker}}:{{docker}} -v {{sysconfig}}:{{sysconfig}}:z -v {{jenkins_local}}:{{jenkins_home}}:z -d {{image}}
+      args:
+        warn: no
+
+    - name: initialize jenkins
+      shell: |
+        cd /root/init/
+        ./init.sh
+
