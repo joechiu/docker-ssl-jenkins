@@ -5,7 +5,7 @@
 - provide the Dockerfile for Docker automation
 - provide a Ansible playbook to run the conatiner instance
 - provide the shell script tools to operate the Jenkins instance
-- Jenkins web app runs on port 8443
+- Jenkins web app runs SSL on port 8443
 
 ## TODO
 - use keytool to generate a jks key to replace jenkins_keystore.jks setting
