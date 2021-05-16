@@ -11,3 +11,4 @@
 - use keytool to generate a jks key to replace jenkins_keystore.jks setting
 - change the password parameter in the Dockerfile with your jks password
 - when the Jenkins instance is up and running, update the Jenkins version up to date
+- please share the error if meet any issues
