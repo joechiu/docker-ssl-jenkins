@@ -5,6 +5,7 @@
 - provide the Dockerfile for Docker automation
 - provide a Ansible playbook to run the conatiner instance
 - provide the shell script tools to operate the Jenkins instance
+- Jenkins pipeline supports Ansible playbook for the automation tasks
 - Jenkins web app runs SSL on port 8443
 
 ## TODO
